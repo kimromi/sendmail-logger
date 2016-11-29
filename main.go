@@ -15,8 +15,6 @@ func init() {
 }
 
 func main() {
-	conf := LoadConfig()
-
 	body := ""
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
@@ -25,20 +23,29 @@ func main() {
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
+	defer SendMail(body)
 
+	conf, err := LoadConfig()
+	if err != nil {
+		log.Print(err)
+		return
+	}
 	file, err := os.OpenFile(conf.LogFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0664)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return
 	}
 	defer file.Close()
 
 	header := "Sendmail Date: " + time.Now().String()
 	file.Write(([]byte)(header + "\n" + body))
+}
 
+func SendMail(body string) {
 	sendmail := exec.Command("sendmail", "-t")
 	stdin, _ := sendmail.StdinPipe()
 
-	err = sendmail.Start()
+	err := sendmail.Start()
 	if err != nil {
 		log.Fatal(err)
 	}
