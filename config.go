@@ -2,7 +2,6 @@ package main
 
 import (
 	"io/ioutil"
-	"log"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -11,13 +10,16 @@ type Config struct {
 	LogFile string `yaml:"logfile"`
 }
 
-func LoadConfig() Config {
+func LoadConfig() (Config, error) {
 	file, err := ioutil.ReadFile("/etc/sendmail-logger/config.yaml")
 	if err != nil {
-		log.Fatal(err)
+		return Config{}, err
 	}
 
 	conf := Config{}
 	err = yaml.Unmarshal([]byte(file), &conf)
-	return conf
+	if err != nil {
+		return Config{}, err
+	}
+	return conf, nil
 }
