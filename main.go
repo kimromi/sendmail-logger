@@ -42,16 +42,13 @@ func main() {
 }
 
 func SendMail(body string) {
-	sendmail := exec.Command("sendmail", "-t")
+	sendmail := exec.Command("sendmail", "-t", "-i")
 	stdin, _ := sendmail.StdinPipe()
 
-	err := sendmail.Start()
-	if err != nil {
-		log.Fatal(err)
-	}
-	io.WriteString(stdin, body+".\n")
+	io.WriteString(stdin, body)
+	stdin.Close()
 
-	err = sendmail.Wait()
+	err := sendmail.Run()
 	if err != nil {
 		log.Fatal(err)
 	}
